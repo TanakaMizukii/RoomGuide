@@ -5,7 +5,7 @@ import { modelFiles } from "./ModelInfo.js";
 import { RoomModelFiles, FurnitureModelFiles } from "./ModelInfo.js";
 
 const renderer = new THREE.WebGLRenderer({
-    canvas: document.querySelector("#myCanvas"),
+    canvas: document.querySelector("#three-canvas"),
     antialias: true,
     setPixelRatio: devicePixelRatio,
 });
@@ -21,7 +21,7 @@ scene.background = new THREE.Color(0xeeeeee);
 const camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 10000);
 camera.position.set(10, 10, 110);
 
-const controls = new OrbitControls(camera, document.querySelector("#myCanvas"));
+const controls = new OrbitControls(camera, document.querySelector("#three-canvas"));
 controls.target.set(0, 0, 0);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
@@ -129,3 +129,29 @@ function OnResize() {
     Get-ChildItem .\models\*.glb | ForEach-Object { '"' + $_.Name + '",' }
     これで一括でmodels配下の要素の名前を配列形式で取得可能!!
  */
+
+export function resizeRendererToDisplaySize() {
+    const canvas = document.getElementById('three-canvas');
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    if (renderer) {
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+    }
+}
+
+// D&D（例）
+document.querySelectorAll('.sidebar__item').forEach(item => {
+    item.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('model', e.currentTarget.dataset.model);
+    });
+});
+
+const canvas = document.getElementById('three-canvas');
+canvas.addEventListener('dragover', (e) => e.preventDefault());
+canvas.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const key = e.dataTransfer.getData('model');
+  //] key を使ってモデルロード → クリック位置などに配置
+});

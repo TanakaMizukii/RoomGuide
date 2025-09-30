@@ -4,9 +4,6 @@ export const RoomModelFiles = [
     "_Room_Box.glb",
     "_Room_Box.glb",
     "_Room_Box.glb",
-    "_Room_Box.glb",
-    "_Room_Box.glb",
-    "_Room_Box.glb",
 ];
 
 export const FurnitureModelFiles = [
