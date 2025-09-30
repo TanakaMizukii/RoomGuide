@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { modelFiles } from "./ModelInfo.js";
 import { RoomModelFiles, FurnitureModelFiles } from "./ModelInfo.js";
 
 const renderer = new THREE.WebGLRenderer({
@@ -26,17 +25,14 @@ controls.target.set(0, 0, 0);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(0, 0, 100);
+controls.autoRotate = true;
+controls.rotateSpeed = 0.05;
 
 // 照明の追加
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(1, 1, 1);
 const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 scene.add(directionalLight, ambientLight);
-
-// // ヘルパーの追加
-// const axesHelper = new THREE.AxesHelper(100);
-// const gridHelper = new THREE.GridHelper(100, 10, 0x000000);
-// scene.add(axesHelper, gridHelper);
 
 // モデルを格納するグループを作成
 const group = new THREE.Group();
@@ -86,7 +82,6 @@ window.addEventListener('wheel', (event) => {
 
 let currentAngle = 0;
 const step = THREE.MathUtils.degToRad(360 / RoomModelFiles.length);
-
 
 function switchModel(index) {
     currentAngle += step; // 累積的に加算
@@ -142,7 +137,7 @@ export function resizeRendererToDisplaySize() {
 }
 
 // D&D（例）
-document.querySelectorAll('.sidebar__item').forEach(item => {
+document.querySelectorAll('.sidebar_item').forEach(item => {
     item.addEventListener('dragstart', (e) => {
         e.dataTransfer.setData('model', e.currentTarget.dataset.model);
     });
@@ -155,3 +150,56 @@ canvas.addEventListener('drop', (e) => {
     const key = e.dataTransfer.getData('model');
   //] key を使ってモデルロード → クリック位置などに配置
 });
+
+// サイドバーのアイコンを初期化
+function initSidebarIcons() {
+    const modelName = Object.keys(FurnitureModelFiles)[0]; // 最初のモデルだけ取得
+    const modelFileName = FurnitureModelFiles[modelName];
+    const canvas = document.getElementById(`canvas-${modelName}`);
+
+    if (canvas) {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        camera.position.set(1, 1, 1);
+        let rot = 0;
+
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        const loader = new GLTFLoader();
+        loader.load(`./models/${modelFileName}`, (gltf) => {
+            const model = gltf.scene;
+            
+            // モデルのサイズを調整
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 1.5 / maxDim;
+            model.scale.set(scale, scale, scale);
+            model.position.sub(center.multiplyScalar(scale));
+
+            scene.add(model);
+        });
+
+        function animate() {
+            rot += 0.5;
+            const radian = (rot * Math.PI) / 180;
+            camera.position.x = 1 * Math.sin(radian);
+            camera.position.z = 1 * Math.cos(radian);
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initSidebarIcons);
