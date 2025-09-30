@@ -15,6 +15,7 @@ const height = window.innerHeight;
 renderer.setSize(width, height);
 
 const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xeeeeee, 20, 120);
 scene.background = new THREE.Color(0xeeeeee);
 
 const camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 10000);
