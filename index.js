@@ -2,7 +2,9 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomModelFiles, FurnitureModelFiles } from "./ModelInfo.js";
+import { Raycaster, Vector2, Plane, Vector3 } from 'three';
 
+// メインキャンバス部分
 const renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector("#three-canvas"),
     antialias: true,
@@ -34,6 +36,14 @@ directionalLight.position.set(1, 1, 1);
 const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 scene.add(directionalLight, ambientLight);
 
+// 家具配置用の床を作成
+const floorGeometry = new THREE.PlaneGeometry(30, 30);
+const floorMaterial = new THREE.MeshBasicMaterial(0x000000);
+const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+floor.position.set(0, -0.11, 100);
+floor.rotateX(-Math.PI / 2);
+scene.add(floor);
+
 // モデルを格納するグループを作成
 const group = new THREE.Group();
 scene.add(group);
@@ -52,7 +62,7 @@ for (let i = 0; i < RoomModelFiles.length; i++) {
         const angle = (i / RoomModelFiles.length) * Math.PI * 2 + Math.PI * 0.5;
         model.position.set(
         0,
-        radius * Math.cos(angle),
+        radius * Math.cos(angle) + 0.12,
         radius * Math.sin(angle),
         );
         model.rotation.y = modelDeg;
@@ -64,8 +74,8 @@ for (let i = 0; i < RoomModelFiles.length; i++) {
 
 let currentIndex = 0;
 
-const stageElement = document.querySelector('.stage');
 // ホイールイベント
+const stageElement = document.querySelector('.stage');
 window.addEventListener('wheel', (event) => {
     // マウスカーソルがサイドバーの上にある場合は処理を中断
     if (event.target.closest('.sidebar')) {
@@ -95,7 +105,7 @@ function switchModel(index) {
     currentAngle += step; // 累積的に加算
     gsap.to(group.rotation, {
         x: currentAngle,
-        duration: 0.5,
+        duration: 0.3,
         ease: "power2.out",
         onUpdate: () => {
             models.forEach(model => {
@@ -141,20 +151,64 @@ export function resizeRendererToDisplaySize() {
     }
 }
 
-// D&D（例）
-document.querySelectorAll('.sidebar_item').forEach(item => {
-    item.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('model', e.currentTarget.dataset.model);
-    });
+// D&D (イベント委譲を使用)
+const sidebar = document.getElementById('sidebar');
+
+// dragstartイベント
+sidebar.addEventListener('dragstart', (e) => {
+    // イベントの発生元が .sidebar_item またはその子要素かを確認
+    const dragItem = e.target.closest('.sidebar_item');
+    if (dragItem) {
+        // dataset.modelはui.jsで設定されているため、それを参照
+        e.dataTransfer.setData('model', dragItem.dataset.model);
+    }
 });
 
 const canvas = document.getElementById('three-canvas');
-canvas.addEventListener('dragover', (e) => e.preventDefault());
+const raycaster = new Raycaster(); // Raycasterを再利用するためにここで定義
+
+// ドラッグオーバー時の処理
+canvas.addEventListener('dragover', (e) => {
+    e.preventDefault();
+});
+
+// ドロップ時の処理
 canvas.addEventListener('drop', (e) => {
     e.preventDefault();
-    const key = e.dataTransfer.getData('model');
-  //] key を使ってモデルロード → クリック位置などに配置
+
+    const modelKey = e.dataTransfer.getData('model');
+    if (!modelKey) return;
+
+    // マウス座標を正規化デバイス座標(NDC)に変換
+    const pointer = new Vector2();
+    const rect = canvas.getBoundingClientRect();
+    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    // レイキャストで床との交点を計算
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObject(floor); // 'floor'オブジェクトとの交差を判定
+
+    if (intersects.length > 0) {
+        const intersectPoint = intersects[0].point;
+        // モデルキーからモデルファイル名を取得
+        // ui.jsで item.dataset.model = modelFileName; としているので、キーはファイル名そのもの
+        const modelFileName = modelKey;
+
+        // モデルをロード
+        loader.load(`./models/${modelFileName}`, (gltf) => {
+            const model = gltf.scene;
+            // モデルを交点に配置
+            model.position.copy(intersectPoint);
+            // ワールド座標系でバウンディングボックスを計算
+            const box = new THREE.Box3().setFromObject(model);
+            // モデルの底面が床の高さに来るようにY座標を調整
+            model.position.y += (intersectPoint.y - box.min.y) + 0.2;
+            scene.add(model);
+        });
+    }
 });
+
 
 // サイドバーのアイコンを初期化
 export function rendererSidebarIcons(modelName) {
@@ -163,6 +217,7 @@ export function rendererSidebarIcons(modelName) {
 
     if (canvas) {
         const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x666666);
         const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
         camera.position.set(1, 1, 1);
         let rot = 0;
