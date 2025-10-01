@@ -1,5 +1,6 @@
 import { resizeRendererToDisplaySize } from "./index.js";
 import { FurnitureModelFiles } from "./ModelInfo.js";
+import { rendererSidebarIcons } from "./index.js";
 
 // 展開／折りたたみ
 const sidebar = document.getElementById('sidebar');
@@ -31,4 +32,6 @@ for (const modelName in FurnitureModelFiles) {
     item.appendChild(canvas);
     item.appendChild(label);
     sidebarList.appendChild(item);
+
+    rendererSidebarIcons(modelName);
 }

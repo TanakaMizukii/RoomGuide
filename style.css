@@ -3,9 +3,9 @@ body {
     overflow: hidden;
 }
 .under-area {
-    position: fixed;
+    position: absolute;
     bottom: 0;
-    right: 0;
+    left: 0;
     width: 100%;
     height: 20vh;
     z-index: 100;
@@ -61,6 +61,10 @@ html,body{
   box-sizing:border-box;
   transition: transform 360ms cubic-bezier(.2,.9,.2,1), opacity 240ms, width 360ms, padding 360ms;
   position:relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Sidebar header */
@@ -87,7 +91,7 @@ html,body{
   flex-direction: column;
   gap: 12px;
   margin-top:10px;
-  overflow: auto;
+  flex-grow: 1;
 }
 
 /* Item */
@@ -200,7 +204,7 @@ html,body{
 /* Canvas fills remaining area */
 #three-canvas{
   width:100%;
-  height:calc(100% - 58px);
+  height: 100%;
   border-radius:10px;
   background:
     linear-gradient(180deg, rgba(8,12,18,0.6), rgba(5,8,10,0.2)),

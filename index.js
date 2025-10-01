@@ -25,8 +25,8 @@ controls.target.set(0, 0, 0);
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
 controls.target.set(0, 0, 100);
-controls.autoRotate = true;
-controls.rotateSpeed = 0.05;
+// controls.autoRotate = true;
+// controls.rotateSpeed = 0.05;
 
 // 照明の追加
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -64,10 +64,18 @@ for (let i = 0; i < RoomModelFiles.length; i++) {
 
 let currentIndex = 0;
 
+const stageElement = document.querySelector('.stage');
 // ホイールイベント
 window.addEventListener('wheel', (event) => {
+    // マウスカーソルがサイドバーの上にある場合は処理を中断
+    if (event.target.closest('.sidebar')) {
+        return;
+    }
+
     // 下 20% の領域でのみ反応
-    if (event.clientY >= window.innerHeight * 0.8) {
+    const stageRect = stageElement.getBoundingClientRect();
+    const triggerY = stageRect.top + (stageRect.height * 0.8);
+    if (event.clientY >= triggerY) {
         if (event.deltaY > 0) {
             // 次のモデルへ
             currentIndex = (currentIndex + 1) % models.length;
@@ -96,7 +104,6 @@ function switchModel(index) {
     });
 }
 
-
 tick();
 function tick() {
     controls.update();
@@ -106,9 +113,7 @@ function tick() {
 }
 
 OnResize();
-
 window.addEventListener('resize', OnResize);
-
 function OnResize() {
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -152,8 +157,7 @@ canvas.addEventListener('drop', (e) => {
 });
 
 // サイドバーのアイコンを初期化
-function initSidebarIcons() {
-    const modelName = Object.keys(FurnitureModelFiles)[0]; // 最初のモデルだけ取得
+export function rendererSidebarIcons(modelName) {
     const modelFileName = FurnitureModelFiles[modelName];
     const canvas = document.getElementById(`canvas-${modelName}`);
 
@@ -201,5 +205,3 @@ function initSidebarIcons() {
         animate();
     }
 }
-
-document.addEventListener('DOMContentLoaded', initSidebarIcons);
