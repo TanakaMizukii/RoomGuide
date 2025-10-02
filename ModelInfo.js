@@ -1,13 +1,21 @@
 // 読み込みたいファイルを配列で管理
 export const RoomModelFiles = [
-    "_Room_Box.glb",
-    "_Room_Box.glb",
-    "_Room_Box.glb",
-    "_Room_Box.glb",
+    "_Room_Box_min.glb",
+    "_Room_Box_min.glb",
+    "_Room_Box_min.glb",
+    "_Room_Box_min.glb",
+    "_Room_Box_min.glb",
+    "_Room_Box_min.glb",
+    "_Room_Box_min.glb",
+    "_Room_Box_min.glb",
+    "_Room_Box_min.glb",
+    "_Room_Box_min.glb",
+    "_Room_Box_min.glb",
+    "_Room_Box_min.glb",
 ];
 
 export const FurnitureModelFiles = {
-    "ベッド": "__Bed.glb",
+    "ベッド": "__Bed_min.glb",
     "キャビネット": "__Cabinet.glb",
     "椅子": "__Chair.glb",
     "冷凍庫": "__Freezer.glb",
@@ -40,3 +48,6 @@ export const modelFiles = [
     "__Table.glb",
     "__TVBoard.glb",
 ]
+
+// 圧縮用コード
+// gltf-transform optimize _Room_Box.glb _Room_Box_comp.glb --compress meshopt --texture-compress ktx2 --texture-size 2048

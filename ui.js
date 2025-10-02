@@ -1,6 +1,6 @@
-import { resizeRendererToDisplaySize } from "./index.js";
+import { resizeRendererToDisplaySize } from "./main.js";
 import { FurnitureModelFiles } from "./ModelInfo.js";
-import { rendererSidebarIcons } from "./index.js";
+import { rendererSidebarIcons } from "./main.js";
 
 // 展開／折りたたみ
 const sidebar = document.getElementById('sidebar');
