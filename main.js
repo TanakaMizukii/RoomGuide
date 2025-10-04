@@ -80,10 +80,8 @@ scene.add(group);
 loadInitialModels();
 setupEventListeners();
 
-
 // --- アニメーション開始 ---
 tick();
-
 
 // --- 関数定義 ---
 function loadInitialModels() {
@@ -187,6 +185,7 @@ function onClick(e) {
             targetModel = targetModel.parent;
         }
         handleModelClick(targetModel);
+        console.log(targetModel);
     } else {
         handleBackgroundClick(e);
     }
@@ -194,6 +193,7 @@ function onClick(e) {
 
 function handleModelClick(targetModel) {
     if (transControls.object === targetModel) {
+        gizmo.visible = true;
         switch (transControls.getMode()) {
             case 'translate':
                 transControls.setMode('rotate');
@@ -202,7 +202,7 @@ function handleModelClick(targetModel) {
                 transControls.showZ = false;
                 break;
             case 'rotate':
-                transControls.setMode()
+                transControls.setMode('translate')
                 transControls.showX = true;
                 transControls.showY = false;
                 transControls.showZ = true;
@@ -221,7 +221,7 @@ function handleBackgroundClick(e) {
     gizmo.visible = false;
     const gizmoIntersects = getIntersects(e, [gizmo]);
     if (gizmoIntersects.length === 0) {
-        transControls.detach();
+        gizmo.visible = false;
     }
 }
 
