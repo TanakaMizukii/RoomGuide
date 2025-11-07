@@ -166,7 +166,7 @@ function onDrop(e) {
             const model = gltf.scene;
             model.position.copy(intersectPoint);
             const box = new THREE.Box3().setFromObject(model);
-            model.position.y += (intersectPoint.y - box.min.y) + 0.2;
+            model.position.y += (intersectPoint.y - box.min.y) + 0.15;
             scene.add(model);
             transControls.attach(model);
         });
